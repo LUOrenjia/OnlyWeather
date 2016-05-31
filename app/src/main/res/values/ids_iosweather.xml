@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="iso_weather_top_id" type="id"/>
+    <item name="iso_weather_middle_id" type="id"/>
+    <item name="iso_weather_bottom_id" type="id"/>
+</resources>
