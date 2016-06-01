@@ -2,6 +2,7 @@ package com.shunhaoluo.onlyweather;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -17,7 +18,9 @@ import android.widget.OverScroller;
  */
 public class WeatherLayout extends LinearLayout {
 
-    private View topView;
+    private static final String LOG_TAG = WeatherLayout.class.getSimpleName();
+
+    private IOSWeatherInfoView topView;
     private View middleView;
     private ListView bottomView;
 
@@ -54,7 +57,7 @@ public class WeatherLayout extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        topView = findViewById(R.id.iso_weather_top_id);
+        topView = (IOSWeatherInfoView)findViewById(R.id.iso_weather_top_id);
         middleView = findViewById(R.id.iso_weather_middle_id);
         bottomView = (ListView)findViewById(R.id.iso_weather_bottom_id);
     }
@@ -63,11 +66,12 @@ public class WeatherLayout extends LinearLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         ViewGroup.LayoutParams params = bottomView.getLayoutParams();
-        params.height = getMeasuredHeight() - middleView.getMeasuredHeight();
+        params.height = getMeasuredHeight() - middleView.getMeasuredHeight() - topView.getMeasuredHeight()/2;
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+//        Log.i( LOG_TAG , "onInterceptTouchEvent");
         final int action = ev.getAction();
         float y = ev.getY();
         switch (action) {
@@ -79,44 +83,21 @@ public class WeatherLayout extends LinearLayout {
 //                getCurrentScrollView();
                 if (Math.abs(dy) > mTouchSlop) {
                     mDragging = true;
-//                    if (mInnerScrollView instanceof ScrollView) {
-//                        // 如果topView没有隐藏
-//                        // 或sc的scrollY = 0 && topView隐藏 && 下拉，则拦截
-//                        if (!isTopHidden
-//                                || (mInnerScrollView.getScrollY() == 0
-//                                && isTopHidden && dy > 0)) {
-//
-//                            initVelocityTrackerIfNotExists();
-//                            mVelocityTracker.addMovement(ev);
-//                            mLastY = y;
-//                            return true;
-//                        }
-//                    } else if (mInnerScrollView instanceof ListView) {
-//
-//                        ListView lv = (ListView) mInnerScrollView;
-//                        View c = lv.getChildAt(lv.getFirstVisiblePosition());
-//                        // 如果topView没有隐藏
-//                        // 或sc的listView在顶部 && topView隐藏 && 下拉，则拦截
-//
-//                        if (!isTopHidden || //
-//                                (c != null //
-//                                        && c.getTop() == 0//
-//                                        && isTopHidden && dy > 0)) {
-//
-//                            initVelocityTrackerIfNotExists();
-//                            mVelocityTracker.addMovement(ev);
-//                            mLastY = y;
-//                            return true;
-//                        }
-//                    }else if (mInnerScrollView instanceof RecyclerView) {
-//                        RecyclerView rv = (RecyclerView) mInnerScrollView;
-//                        if (!isTopHidden || (!android.support.v4.view.ViewCompat.canScrollVertically(rv, -1) && isTopHidden && dy > 0)) {
-//                            initVelocityTrackerIfNotExists();
-//                            mVelocityTracker.addMovement(ev);
-//                            mLastY = y;
-//                            return true;
-//                        }
-//                    }
+                    if (bottomView instanceof ListView) {
+                        ListView lv = bottomView;
+                        View c = lv.getChildAt(lv.getFirstVisiblePosition());
+                        // 如果topView没有隐藏
+                        // 或sc的listView在顶部 && topView隐藏 && 下拉，则拦截
+                        if (!isTopHidden || //
+                                (c != null //
+                                        && c.getTop() == 0//
+                                        && isTopHidden && dy > 0)) {
+                            initVelocityTrackerIfNotExists();
+                            mVelocityTracker.addMovement(ev);
+                            mLastY = y;
+                            return true;
+                        }
+                    }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -130,6 +111,7 @@ public class WeatherLayout extends LinearLayout {
 
     @Override
     public void computeScroll() {
+//        Log.i( LOG_TAG , "computeScroll");
         super.computeScroll();
         if (mScroller.computeScrollOffset()) {
             scrollTo(0, mScroller.getCurrY());
@@ -148,18 +130,22 @@ public class WeatherLayout extends LinearLayout {
         if (y < 0) {
             y = 0;
         }
-        if (y > mTopViewHeight) {
-            y = mTopViewHeight;
+        if (y > mTopViewHeight/2) {
+            y = mTopViewHeight/2;
         }
+//        Log.i( LOG_TAG , "scrollTo ");
         if (y != getScrollY()) {
+            float progress = getProgress(y);
+            topView.setProgress(progress);
             super.scrollTo(x, y);
         }
 
-        isTopHidden = getScrollY() == mTopViewHeight;
+        isTopHidden = getScrollY() == mTopViewHeight/2;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+//        Log.i( LOG_TAG , "onTouchEvent");
         initVelocityTrackerIfNotExists();
         mVelocityTracker.addMovement(event);
         int action = event.getAction();
@@ -179,13 +165,12 @@ public class WeatherLayout extends LinearLayout {
                 if (mDragging) {
                     scrollBy(0, (int) -dy);
 //                     如果topView隐藏，且上滑动时，则改变当前事件为ACTION_DOWN
-//                    if (getScrollY() == mTopViewHeight && dy < 0) {
-//                        event.setAction(MotionEvent.ACTION_DOWN);
-//                        dispatchTouchEvent(event);
-//                        isInControl = false;
-//                    }
+                    if (getScrollY() == mTopViewHeight/2 && dy < 0) {
+                        event.setAction(MotionEvent.ACTION_DOWN);
+                        dispatchTouchEvent(event);
+                        isInControl = false;
+                    }
                 }
-
                 mLastY = y;
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -226,7 +211,8 @@ public class WeatherLayout extends LinearLayout {
 
 
     public void fling(int velocityY) {
-        mScroller.fling(0, getScrollY(), 0, velocityY, 0, 0, 0, mTopViewHeight);
+        Log.i(LOG_TAG , "fling");
+        mScroller.fling(0, getScrollY(), 0, velocityY, 0, 0, 0, mTopViewHeight/2);
         invalidate();
     }
 
@@ -242,4 +228,9 @@ public class WeatherLayout extends LinearLayout {
             mVelocityTracker = null;
         }
     }
+
+    private float getProgress(float offset){
+        return 1 - offset/(mTopViewHeight/2);
+    }
+
 }

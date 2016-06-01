@@ -4,22 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#38d"
     tools:context="com.shunhaoluo.onlyweather.MainActivity">
 
-    <View
+    <com.shunhaoluo.onlyweather.IOSWeatherInfoView
         android:id="@id/iso_weather_top_id"
         android:layout_width="match_parent"
         android:layout_height="@dimen/onlyweather_top_height"
-        android:background="#666"/>
+        android:background="#50666666"/>
     <View
         android:id="@id/iso_weather_middle_id"
         android:layout_width="match_parent"
         android:layout_height="@dimen/onlyweather_middle_height"
-        android:background="#999"/>
+        android:background="#50999999"/>
     <ListView
         android:id="@id/iso_weather_bottom_id"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#aaa">
+        android:background="#00ffffff">
     </ListView>
 </com.shunhaoluo.onlyweather.WeatherLayout>

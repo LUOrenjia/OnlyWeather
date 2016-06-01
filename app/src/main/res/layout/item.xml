@@ -3,9 +3,10 @@
     android:id="@+id/id_info"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:background="#ffffffff"
+    android:layout_marginTop="5dp"
+    android:textColor="#fff"
+    android:background="#00ffffff"
     android:gravity="center" >
-    
 
 </TextView>
 
